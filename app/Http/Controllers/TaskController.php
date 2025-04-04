@@ -7,16 +7,25 @@ use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
+    public function getTasks(Request $request)
+    {
+        $tasks = Task::where('user_id', $request->user()->id)
+            ->get(['id', 'title', 'task', 'category_id', 'is_complete', 'priority', 'due_date']);
+        return response()->json($tasks);
+    }
+
     public function store(Request $request)
     {
         $validatedData = $request->validate([
+            'title' => 'required|string|max:255',
             'task' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'status' => 'required|string|in:pending,completed',
+            'category_id' => 'required|string|max:255',
+            'is_complete' => 'nullable|boolean',
             'priority' => 'required|string|in:low,medium,high',
             'due_date' => 'nullable|date',
-            'user' => 'required|exists:users,id',
         ]);
+
+        $validatedData['user_id'] = $request->user()->id;
 
         $task = Task::create($validatedData);
 
@@ -45,8 +54,8 @@ class TaskController extends Controller
         $validatedData = $request->validate([
             'id' => 'required|exists:tasks,id',
             'task' => 'sometimes|required|string|max:255',
-            'category' => 'sometimes|required|string|max:20',
-            'status' => 'sometimes|required|string|in:pending,completed',
+            'category_id' => 'sometimes|required|integer|max:20',
+            'is_complete' => 'sometimes|required|boolean',
             'priority' => 'sometimes|required|string|in:low,medium,high',
             'due_date' => 'sometimes|nullable|date',
         ]);
@@ -98,8 +107,8 @@ class TaskController extends Controller
             $query->where('priority', $request->priority);
         }
 
-        if ($request->has('category')) {
-            $query->where('category', $request->category);
+        if ($request->has('category_id')) {
+            $query->where('category_id', $request->category);
         }
 
         $tasks = $query->get();
@@ -107,6 +116,21 @@ class TaskController extends Controller
         return response()->json([
             'message' => 'Tasks found',
             'tasks' => $tasks,
+        ], 200);
+    }
+
+    public function toggleTaskComplete(Request $request)
+    {
+        $validatedData = $request->validate([
+            'id' => 'required|exists:tasks,id',
+        ]);
+
+        $task = Task::find($validatedData['id']);
+        $task->update(['is_complete' => !$task->is_complete]);
+
+        return response()->json([
+            'message' => 'Task completion status toggled successfully',
+            'task' => $task,
         ], 200);
     }
 }

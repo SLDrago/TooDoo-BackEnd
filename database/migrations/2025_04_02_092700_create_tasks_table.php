@@ -13,13 +13,18 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
+            $table->string('title');
             $table->string('task');
-            $table->string('category');
-            $table->string('status')->default('pending');
+            $table->bigInteger('category_id')
+                ->foreign('category_id')
+                ->references('id')
+                ->on('categories')
+                ->onDelete('cascade');
+            $table->boolean('is_complete')->default(false);
             $table->string('priority')->default('low');
             $table->date('due_date')->nullable();
-            $table->bigInteger('user')
-                ->foreign('user')
+            $table->bigInteger('user_id')
+                ->foreign('user_id')
                 ->references('id')
                 ->on('users')
                 ->onDelete('cascade');
