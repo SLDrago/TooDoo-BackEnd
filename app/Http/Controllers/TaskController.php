@@ -17,8 +17,8 @@ class TaskController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'title' => 'required|string|max:255',
-            'task' => 'required|string|max:255',
+            'title' => 'required|string|max:30',
+            'task' => 'required|string|max:100',
             'category_id' => 'required|string|max:255',
             'is_complete' => 'nullable|boolean',
             'priority' => 'required|string|in:low,medium,high',
@@ -53,7 +53,8 @@ class TaskController extends Controller
     {
         $validatedData = $request->validate([
             'id' => 'required|exists:tasks,id',
-            'task' => 'sometimes|required|string|max:255',
+            'title' => 'sometimes|required|string|max:30',
+            'task' => 'sometimes|required|string|max:100',
             'category_id' => 'sometimes|required|integer|max:20',
             'is_complete' => 'sometimes|required|boolean',
             'priority' => 'sometimes|required|string|in:low,medium,high',
